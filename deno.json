@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@joyautomation/dark-matter": "jsr:@joyautomation/dark-matter@^0.0.26"
+  }
+}

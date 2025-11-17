@@ -16,14 +16,8 @@ import {
 } from './request.ts';
 import { isFail, type Result } from '@joyautomation/dark-matter';
 import { isAlpacaOptionChain } from './options.ts';
+import { failOrTest } from '../testing.ts';
 // Alpaca() requires the API key and sectret to be set, even for crypto
-
-const failOrTest = (result: Result<unknown>, test: (value: unknown) => void) => {
-	if (isFail(result)) {
-		throw result.error;
-	}
-	test(result.output);
-};
 
 describe('Alpaca', () => {
 	it('should be able to get the account', async () => {

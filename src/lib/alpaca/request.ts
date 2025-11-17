@@ -3,12 +3,12 @@ import { createFail, createSuccess, type Result, rTryAsync } from '@joyautomatio
 import type { AlpacaOptionChain } from './options.ts';
 
 export type AlpacaBar = {
-	c: number;
-	h: number;
-	l: number;
-	n: number;
-	o: number;
-	t: string;
+	c: number; // close
+	h: number; // high
+	l: number; // low
+	n: number; // number of trades
+	o: number; // open
+	t: string; // timestamp
 	v: number;
 	vw: number;
 };

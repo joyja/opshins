@@ -1,14 +1,52 @@
+import { createFail, createSuccess, isSuccess } from '@joyautomation/dark-matter';
 import {
 	alpacaGetAsset,
 	alpacaGetBarsHistory,
 	alpacaGetLatestTrade,
 	getLastTradingDayRange
 } from '../../../lib/alpaca/request.ts';
+import { calculateFundamentals } from '../../../lib/alphaVantage/composite.ts';
+import {
+	avGetCashFlow,
+	avGetOverview,
+	avGetBalanceSheet,
+	avGetIncomeStatement
+} from '../../../lib/alphaVantage/request.ts';
 
 export const load = ({ params }: { params: { ticker: string } }) => {
 	const { start, end } = getLastTradingDayRange();
+	const fundamentals = Promise.all([
+		avGetOverview(params.ticker),
+		avGetCashFlow(params.ticker),
+		avGetBalanceSheet(params.ticker),
+		avGetIncomeStatement(params.ticker)
+	]).then(([overview, cashFlow, balanceSheet, incomeStatement]) => {
+		if (
+			isSuccess(overview) &&
+			isSuccess(cashFlow) &&
+			isSuccess(balanceSheet) &&
+			isSuccess(incomeStatement)
+		) {
+			return createSuccess(
+				calculateFundamentals(
+					overview.output,
+					cashFlow.output,
+					balanceSheet.output,
+					incomeStatement.output
+				)
+			);
+		} else {
+			return createFail('Failed to calculate fundamentals');
+		}
+	});
+
 	return {
 		ticker: params.ticker,
+		// overview: avGetOverview(params.ticker),
+		// cashFlow: avGetCashFlow(params.ticker),
+		// balanceSheet: avGetBalanceSheet(params.ticker),
+		// incomeStatement: avGetIncomeStatement(params.ticker),
+		fundamentals,
 		asset: alpacaGetAsset(params.ticker),
 		trade: alpacaGetLatestTrade(params.ticker),
 		start,

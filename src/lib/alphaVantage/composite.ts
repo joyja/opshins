@@ -187,7 +187,7 @@ export const processSectorName = (sector: string): SectorName => {
 	if (sector === 'CONSUMER DEFENSIVE') return 'consumerStaples';
 	if (sector === 'CONSUMER CYCLICAL') return 'consumerDiscretionary';
 	if (sector === 'HEALTHCARE') return 'healthCare';
-	if (sector === 'FINANCIAL SERVICES  ') return 'financials';
+	if (sector === 'FINANCIAL SERVICES') return 'financials';
 	if (sector === 'ENERGY') return 'energy';
 	if (sector === 'INDUSTRIALS') return 'industrials';
 	if (sector === 'TECHNOLOGY') return 'technology';

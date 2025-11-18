@@ -5,7 +5,10 @@ import {
 	alpacaGetLatestTrade,
 	getLastTradingDayRange
 } from '../../../lib/alpaca/request.ts';
-import { calculateFundamentals } from '../../../lib/alphaVantage/composite.ts';
+import {
+	calculateFundamentals,
+	calculateFundamentalsGroups
+} from '../../../lib/alphaVantage/composite.ts';
 import {
 	avGetCashFlow,
 	avGetOverview,
@@ -20,25 +23,34 @@ export const load = ({ params }: { params: { ticker: string } }) => {
 		avGetCashFlow(params.ticker),
 		avGetBalanceSheet(params.ticker),
 		avGetIncomeStatement(params.ticker)
-	]).then(([overview, cashFlow, balanceSheet, incomeStatement]) => {
-		if (
-			isSuccess(overview) &&
-			isSuccess(cashFlow) &&
-			isSuccess(balanceSheet) &&
-			isSuccess(incomeStatement)
-		) {
-			return createSuccess(
-				calculateFundamentals(
-					overview.output,
-					cashFlow.output,
-					balanceSheet.output,
-					incomeStatement.output
-				)
-			);
-		} else {
-			return createFail('Failed to calculate fundamentals');
-		}
-	});
+	])
+		.then(([overview, cashFlow, balanceSheet, incomeStatement]) => {
+			if (
+				isSuccess(overview) &&
+				isSuccess(cashFlow) &&
+				isSuccess(balanceSheet) &&
+				isSuccess(incomeStatement)
+			) {
+				return createSuccess(
+					calculateFundamentals(
+						overview.output,
+						cashFlow.output,
+						balanceSheet.output,
+						incomeStatement.output
+					)
+				);
+			} else {
+				return createFail('Failed to calculate fundamentals');
+			}
+		})
+		.then((fundamentals) => {
+			return {
+				fundamentals,
+				fundamentalsGroups: isSuccess(fundamentals)
+					? createSuccess(calculateFundamentalsGroups(fundamentals.output))
+					: createFail('Failed to calculate fundamentals groups')
+			};
+		});
 
 	return {
 		ticker: params.ticker,

@@ -1,4 +1,15 @@
-import type { Fundamentals } from '../fundamentals/types.d.ts';
+import {
+	fundamentalGroups,
+	fundamentalsFunctions,
+	fundamentalsGroupKeys,
+	fundamentalsKeys,
+	fundamentalWeights,
+	getScoreFromLetter,
+	getGradeFromScore,
+	type Fundamentals,
+	type FundamentalsGroupGrades,
+	type FundamentalGroup
+} from '../fundamentals';
 import { getGradeConfig } from '../grades/fundamentals/grade.ts';
 import {
 	isSectorName,
@@ -207,125 +218,47 @@ export const calculateFundamentals = (
 ): Fundamentals => {
 	const sector = processSectorName(overview.Sector);
 	const config = getGradeConfig(sector);
-	const earningsYield = calcEarningsYield(overview);
-	const bookToMarket = calcBookToMarket(overview, balanceSheet.annualReports[0]);
-	const salesToPrice = calcSalesToPrice(overview);
-	const fcfYield = calcFreeCashFlowYield(overview, cashFlow.annualReports[0]);
-	const evToEbitda = calcEBITDAYieldFromEV(overview);
-	const returnOnEquity = numberOrNull(overview.ReturnOnEquityTTM);
-	const returnOnAssets = numberOrNull(overview.ReturnOnAssetsTTM);
-	const grossMargin = calcGrossMargin(incomeStatement.annualReports[0]);
-	const operatingMargin = numberOrNull(overview.OperatingMarginTTM);
-	const netMargin = calcNetMargin(incomeStatement.annualReports[0]);
-	const fcfMargin = calcFreeCashFlowMargin(cashFlow.annualReports[0], overview);
-	const accrualsRatio = calcAccrualsRatio(
-		cashFlow.annualReports[0],
-		incomeStatement.annualReports[0],
-		balanceSheet.annualReports[0]
-	);
-	const debtToEquity = calcDebtToEquity(balanceSheet.annualReports[0]);
-	const debtToAssets = calcDebtToAssets(balanceSheet.annualReports[0]);
-	const interestCoverage = calcInterestCoverage(incomeStatement.annualReports[0]);
-	const currentRatio = calcCurrentRatio(balanceSheet.annualReports[0]);
-	const quickRatio = calcQuickRatio(balanceSheet.annualReports[0]);
-	const revenueGrowthYoY = numberOrNull(overview.QuarterlyRevenueGrowthYOY);
-	const earningsGrowthYoY = numberOrNull(overview.QuarterlyEarningsGrowthYOY);
-	const log = calcLogMarketCap(overview);
-	const maTrend = calcMovingAverageTrend(overview);
 	return {
 		sector,
-		earningsYield: {
-			value: earningsYield,
-			grade: gradeValue(earningsYield, config.earningsYield),
-			group: 'value'
-		},
-		bookToMarket: {
-			value: bookToMarket,
-			grade: gradeValue(bookToMarket, config.bookToMarket),
-			group: 'value'
-		},
-		salesToPrice: {
-			value: salesToPrice,
-			grade: gradeValue(salesToPrice, config.salesToPrice),
-			group: 'value'
-		},
-		fcfYield: { value: fcfYield, grade: gradeValue(fcfYield, config.fcfYield), group: 'value' },
-		evToEbitda: {
-			value: evToEbitda,
-			grade: gradeValue(evToEbitda, config.evToEbitda),
-			group: 'value'
-		},
-		returnOnEquity: {
-			value: returnOnEquity,
-			grade: gradeValue(returnOnEquity, config.returnOnEquity),
-			group: 'profitability'
-		},
-		returnOnAssets: {
-			value: returnOnAssets,
-			grade: gradeValue(returnOnAssets, config.returnOnAssets),
-			group: 'profitability'
-		},
-		grossMargin: {
-			value: grossMargin,
-			grade: gradeValue(grossMargin, config.grossMargin),
-			group: 'profitability'
-		},
-		operatingMargin: {
-			value: operatingMargin,
-			grade: gradeValue(operatingMargin, config.operatingMargin),
-			group: 'profitability'
-		},
-		netMargin: {
-			value: netMargin,
-			grade: gradeValue(netMargin, config.netMargin),
-			group: 'profitability'
-		},
-		fcfMargin: {
-			value: fcfMargin,
-			grade: gradeValue(fcfMargin, config.fcfMargin),
-			group: 'profitability'
-		},
-		accrualsRatio: {
-			value: accrualsRatio,
-			grade: gradeValue(accrualsRatio, config.accrualsRatio),
-			group: 'profitability'
-		},
-		debtToEquity: {
-			value: debtToEquity,
-			grade: gradeValue(debtToEquity, config.debtToEquity),
-			group: 'leverage'
-		},
-		debtToAssets: {
-			value: debtToAssets,
-			grade: gradeValue(debtToAssets, config.debtToAssets),
-			group: 'leverage'
-		},
-		interestCoverage: {
-			value: interestCoverage,
-			grade: gradeValue(interestCoverage, config.interestCoverage),
-			group: 'leverage'
-		},
-		currentRatio: {
-			value: currentRatio,
-			grade: gradeValue(currentRatio, config.currentRatio),
-			group: 'leverage'
-		},
-		quickRatio: {
-			value: quickRatio,
-			grade: gradeValue(quickRatio, config.quickRatio),
-			group: 'leverage'
-		},
-		revenueGrowthYoY: {
-			value: revenueGrowthYoY,
-			grade: gradeValue(revenueGrowthYoY, config.revenueGrowthYoY),
-			group: 'growth'
-		},
-		earningsGrowthYoY: {
-			value: earningsGrowthYoY,
-			grade: gradeValue(earningsGrowthYoY, config.earningsGrowthYoY),
-			group: 'growth'
-		},
-		log: { value: log, grade: gradeValue(log, config.log), group: 'size' },
-		maTrend: { value: maTrend, grade: gradeValue(maTrend, config.maTrend), group: 'size' }
+		...(Object.fromEntries(
+			fundamentalsKeys.map((key) => {
+				const value = fundamentalsFunctions[key]({
+					overview,
+					cashFlow: cashFlow.annualReports[0],
+					balanceSheet: balanceSheet.annualReports[0],
+					incomeStatement: incomeStatement.annualReports[0]
+				});
+				return [
+					key,
+					{
+						value,
+						grade: gradeValue(value, config[key]),
+						group: fundamentalGroups[key],
+						weight: fundamentalWeights[key],
+						config: config[key]
+					}
+				];
+			})
+		) as Omit<Fundamentals, 'sector'>)
 	};
+};
+
+export const calculateFundamentalsGroups = (
+	fundamentals: Fundamentals
+): FundamentalsGroupGrades => {
+	return Object.fromEntries(
+		fundamentalsGroupKeys.map((key: FundamentalGroup) => {
+			const groupFactors = Object.values(fundamentals)
+				.filter((factor) => {
+					if (typeof factor !== 'object') return false;
+					return factor.group === key;
+				})
+				.reduce((acc, factor) => {
+					if (typeof factor !== 'object' || !factor.grade) return acc;
+					const score = getScoreFromLetter(factor.grade);
+					return acc + factor.weight * score;
+				}, 0);
+			return [key, getGradeFromScore(groupFactors)];
+		})
+	) as FundamentalsGroupGrades;
 };

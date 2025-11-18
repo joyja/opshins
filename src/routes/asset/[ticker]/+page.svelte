@@ -1,11 +1,9 @@
 <script lang="ts">
 	import LineChart from '$lib/components/LineChart.svelte';
 	import { isSuccess } from '@joyautomation/dark-matter';
+	import Fundamentals from './Fundamentals.svelte';
 
 	let { data } = $props();
-	$effect(() => {
-		console.log(data);
-	});
 </script>
 
 {#await data.asset then asset}
@@ -18,10 +16,15 @@
 {/await}
 
 {#await data.fundamentals then fundamentals}
-	{#if isSuccess(fundamentals)}
-		<pre>{JSON.stringify(fundamentals.output, null, 2)}</pre>
+	{#if isSuccess(fundamentals.fundamentals)}
+		<Fundamentals fundamentals={fundamentals.fundamentals.output} />
 	{:else}
-		{JSON.stringify(fundamentals.error)}
+		{JSON.stringify(fundamentals.fundamentals.error)}
+	{/if}
+	{#if isSuccess(fundamentals.fundamentalsGroups)}
+		<pre>{JSON.stringify(fundamentals.fundamentalsGroups.output)}</pre>
+	{:else}
+		{JSON.stringify(fundamentals.fundamentalsGroups.error)}
 	{/if}
 {/await}
 

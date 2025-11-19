@@ -1,17 +1,18 @@
 <script lang="ts">
-	let { children } = $props();
+	let { backgroundColor, children } = $props();
+	$effect(() => console.log(backgroundColor));
 </script>
 
-<div class="card">
+<div class="card" style="--card-background-color: {backgroundColor || 'var(--transparent)'}">
 	{@render children()}
 </div>
 
 <style lang="scss">
 	.card {
-		padding: var(--spacing-unit);
+		background-color: var(--card-background-color);
 		border-radius: var(--border-radius);
-		background-color: var(--color-background);
 		box-shadow: var(--shadow-md);
 		border: solid 1px var(--theme-neutral-500);
+		border-radius: var(--rounded-xl);
 	}
 </style>

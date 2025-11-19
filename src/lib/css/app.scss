@@ -3,15 +3,15 @@
 
 // Helper to emit css variables for a theme map
 @mixin apply-theme($theme-map) {
-  @each $property, $value in $theme-map {
-    @if (meta.type-of($value) == 'map') {
-      @each $nested-key, $nested-value in $value {
-        --#{$property}-#{$nested-key}: #{$nested-value};
-      }
-    } @else {
-      --#{$property}: #{$value};
-    }
-  }
+	@each $property, $value in $theme-map {
+		@if (meta.type-of($value) == 'map') {
+			@each $nested-key, $nested-value in $value {
+				--#{$property}-#{$nested-key}: #{$nested-value};
+			}
+		} @else {
+			--#{$property}: #{$value};
+		}
+	}
 }
 
 $themes: (
@@ -170,4 +170,16 @@ $themes: (
 	.themeSystem {
 		@include apply-theme(map.get($themes, 'themeDark'));
 	}
+}
+
+:root {
+	--grade-a: var(--green-700);
+	--grade-b: var(--teal-700);
+	--grade-c: var(--amber-700);
+	--grade-d: var(--orange-700);
+	--grade-f: var(--red-700);
+}
+
+body {
+	padding: calc(var(--spacing-unit) * 10);
 }

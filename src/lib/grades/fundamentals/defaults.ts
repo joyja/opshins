@@ -1,49 +1,74 @@
 import type { FundamentalsGradeConfig } from './types.d.ts';
 
 export const fundamentalsGradeConfigDefault: FundamentalsGradeConfig = {
+	// VALUE (wheel-optimized)
+	// Goal: avoid overpaying, but don't artificially punish quality large caps
+
 	// Earnings Yield (1/PE)
+	// A: ≥6%   (PE ≤ ~16)
+	// B: ≥4%   (PE ≤ ~25)
+	// C: ≥2.5% (PE ≤ ~40)
+	// D: ≥1.5% (PE ≤ ~65)
+	// F: <1.5%
 	earningsYield: {
 		direction: 'higherIsBetter',
-		a: 0.1, // ≥10% → A
-		b: 0.07, // ≥7%  → B
-		c: 0.05, // ≥5%  → C
-		d: 0.03 // ≥3%  → D else F
+		a: 0.06,
+		b: 0.04,
+		c: 0.025,
+		d: 0.015
 	},
-	// Book-to-Market (rough global defaults)
-	// A: ≥1.2, B: 0.8–1.2, C: 0.5–0.8, D: 0.3–0.5, F: <0.3
+
+	// Book-to-Market
+	// This metric is not helpful for wheel stocks; optional to leave at zero weight.
+	// Keeping the structure but using very broad, non-punitive cutoffs.
 	bookToMarket: {
 		direction: 'higherIsBetter',
-		a: 1.2,
-		b: 0.8,
-		c: 0.5,
-		d: 0.3
+		a: 0.8, // A
+		b: 0.5, // B
+		c: 0.3, // C
+		d: 0.1 // D else F
 	},
+
 	// Sales-to-Price (Revenue Yield)
-	// A: ≥50%, B: 30–50%, C: 15–30%, D: 7–15%, F: <7%
+	// A: ≥20%
+	// B: ≥12%
+	// C: ≥7%
+	// D: ≥4%
+	// F < 4%
 	salesToPrice: {
 		direction: 'higherIsBetter',
-		a: 0.5,
-		b: 0.3,
-		c: 0.15,
-		d: 0.07
+		a: 0.2,
+		b: 0.12,
+		c: 0.07,
+		d: 0.04
 	},
-	// FCF Yield
-	// A: ≥8%, B: 5–8%, C: 3–5%, D: 1–3%, F: <1%
+
+	// Free Cash Flow Yield
+	// A: ≥5%
+	// B: ≥3%
+	// C: ≥2%
+	// D: ≥1%
+	// F < 1%
 	fcfYield: {
 		direction: 'higherIsBetter',
-		a: 0.08,
-		b: 0.05,
-		c: 0.03,
+		a: 0.05,
+		b: 0.03,
+		c: 0.02,
 		d: 0.01
 	},
-	// EBITDA/EV
-	// A: ≥12%, B: 8–12%, C: 5–8%, D: 2–5%, F: <2%
+
+	// EV/EBITDA (inverted)
+	// A: ≥10%
+	// B: ≥7%
+	// C: ≥5%
+	// D: ≥3%
+	// F < 3%
 	evToEbitda: {
 		direction: 'higherIsBetter',
-		a: 0.12,
-		b: 0.08,
+		a: 0.1,
+		b: 0.07,
 		c: 0.05,
-		d: 0.02
+		d: 0.03
 	},
 	// ROE
 	returnOnEquity: {
@@ -160,12 +185,11 @@ export const fundamentalsGradeConfigDefault: FundamentalsGradeConfig = {
 	},
 	// log(MarketCap) – smaller is better (value/size tilt)
 	log: {
-		direction: 'lowerIsBetter',
-		// ~<2B, 2–10B, 10–50B, 50–200B, >200B
-		a: 21.4, // A
-		b: 23.0, // B
-		c: 24.6, // C
-		d: 26.0 // D else F
+		direction: 'higherIsBetter', // ← FIXED
+		a: 26.0, // ≥26 → Mega-cap → A
+		b: 24.6, // ≥24.6 → Large-cap → B
+		c: 23.0, // ≥23 → Mid-cap → C
+		d: 21.4 // ≥21.4 → Small-cap → D
 	},
 	// MA trend 50d/200d
 	maTrend: {

@@ -8,7 +8,9 @@ import {
 	getGradeFromScore,
 	type Fundamentals,
 	type FundamentalsGroupGrades,
-	type FundamentalGroup
+	type FundamentalGroup,
+	fundamentalsForHumans,
+	fundamentalGroupWeights
 } from '../fundamentals';
 import { getGradeConfig } from '../grades/fundamentals/grade.ts';
 import {
@@ -202,12 +204,23 @@ export const gradeValue = (
 	value: number | null,
 	config: FactorGradeConfig
 ): 'a' | 'b' | 'c' | 'd' | 'f' | null => {
-	if (!value) return null;
-	if (value >= config.a) return 'a';
-	if (value >= config.b) return 'b';
-	if (value >= config.c) return 'c';
-	if (value >= config.d) return 'd';
-	return 'f';
+	if (config.direction === 'higherIsBetter') {
+		if (!value) return null;
+		if (value >= config.a) return 'a';
+		if (value >= config.b) return 'b';
+		if (value >= config.c) return 'c';
+		if (value >= config.d) return 'd';
+		return 'f';
+	}
+	if (config.direction === 'lowerIsBetter') {
+		if (!value) return null;
+		if (value <= config.a) return 'a';
+		if (value <= config.b) return 'b';
+		if (value <= config.c) return 'c';
+		if (value <= config.d) return 'd';
+		return 'f';
+	}
+	throw Error(`Unknown direction: ${config.direction}`);
 };
 
 export const calculateFundamentals = (
@@ -231,6 +244,8 @@ export const calculateFundamentals = (
 				return [
 					key,
 					{
+						name: fundamentalsForHumans[key].name,
+						description: fundamentalsForHumans[key].description,
 						value,
 						grade: gradeValue(value, config[key]),
 						group: fundamentalGroups[key],
@@ -246,7 +261,7 @@ export const calculateFundamentals = (
 export const calculateFundamentalsGroups = (
 	fundamentals: Fundamentals
 ): FundamentalsGroupGrades => {
-	return Object.fromEntries(
+	const grades = Object.fromEntries(
 		fundamentalsGroupKeys.map((key: FundamentalGroup) => {
 			const groupFactors = Object.values(fundamentals)
 				.filter((factor) => {
@@ -260,5 +275,14 @@ export const calculateFundamentalsGroups = (
 				}, 0);
 			return [key, getGradeFromScore(groupFactors)];
 		})
-	) as FundamentalsGroupGrades;
+	) as Omit<FundamentalsGroupGrades, 'aggregate'>;
+	return {
+		...grades,
+		aggregate: getGradeFromScore(
+			Object.values(fundamentalsGroupKeys).reduce((acc, key) => {
+				const weight = fundamentalGroupWeights[key];
+				return acc + weight * getScoreFromLetter(grades[key]);
+			}, 0)
+		)
+	};
 };

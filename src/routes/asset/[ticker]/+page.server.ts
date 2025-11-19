@@ -1,4 +1,4 @@
-import { createFail, createSuccess, isSuccess } from '@joyautomation/dark-matter';
+import { createFail, createSuccess, isSuccess, type Result } from '@joyautomation/dark-matter';
 import {
 	alpacaGetAsset,
 	alpacaGetBarsHistory,
@@ -15,10 +15,14 @@ import {
 	avGetBalanceSheet,
 	avGetIncomeStatement
 } from '../../../lib/alphaVantage/request.ts';
+import type { Fundamentals, FundamentalsGroupGrades } from '../../../lib/fundamentals.ts';
 
 export const load = ({ params }: { params: { ticker: string } }) => {
 	const { start, end } = getLastTradingDayRange();
-	const fundamentals = Promise.all([
+	const fundamentals: Promise<{
+		fundamentals: Result<Fundamentals>;
+		fundamentalsGroups: Result<FundamentalsGroupGrades>;
+	}> = Promise.all([
 		avGetOverview(params.ticker),
 		avGetCashFlow(params.ticker),
 		avGetBalanceSheet(params.ticker),

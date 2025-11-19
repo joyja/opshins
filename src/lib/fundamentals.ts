@@ -43,9 +43,13 @@ export const fundamentalsGroupKeys = [
 
 export type FundamentalGroup = (typeof fundamentalsGroupKeys)[number];
 
-export type FundamentalsGroupGrades = Record<FundamentalGroup, Grade>;
+export type FundamentalsGroupGrades = Record<FundamentalGroup, Grade> & {
+	aggregate: Grade;
+};
 
 export type FundamentalFactor = {
+	name: string;
+	description: string;
 	value: number | null;
 	weight: number;
 	grade: Grade | null;
@@ -76,6 +80,117 @@ export const fundamentalsKeys = [
 	'log',
 	'maTrend'
 ] as const;
+
+export const fundamentalsForHumans: Record<
+	FundamentalsKeys,
+	{ name: string; description: string }
+> = {
+	earningsYield: {
+		name: 'Earnings Yield',
+		description:
+			"Net income relative to the company's market value (roughly the inverse of the P/E ratio). Higher means cheaper earnings."
+	},
+	bookToMarket: {
+		name: 'Book to Market',
+		description:
+			"Shareholders' equity (book value) compared with market capitalization. Higher values suggest the stock is priced closer to its accounting value."
+	},
+	salesToPrice: {
+		name: 'Sales to Price',
+		description:
+			'Revenue relative to market capitalization (roughly the inverse of the price‑to‑sales ratio). Higher means more sales per dollar of equity value.'
+	},
+	fcfYield: {
+		name: 'Free Cash Flow Yield',
+		description:
+			'Free cash flow generated over the last year relative to market capitalization. Higher means the company produces more cash per dollar invested.'
+	},
+	evToEbitda: {
+		name: 'EV / EBITDA (inverted)',
+		description:
+			'The inverse of the enterprise‑value‑to‑EBITDA multiple. Higher values indicate a lower valuation on operating earnings.'
+	},
+	returnOnEquity: {
+		name: 'Return on Equity',
+		description:
+			'Net income generated for each dollar of shareholder equity. Higher means management is using equity capital more efficiently.'
+	},
+	returnOnAssets: {
+		name: 'Return on Assets',
+		description:
+			'Net income generated for each dollar of total assets. Higher suggests more efficient use of the asset base.'
+	},
+	grossMargin: {
+		name: 'Gross Margin',
+		description:
+			'Percentage of revenue left after direct costs of goods sold. Higher margins indicate stronger pricing power or cost control at the product level.'
+	},
+	operatingMargin: {
+		name: 'Operating Margin',
+		description:
+			'Operating income as a percentage of revenue. Captures how much profit the core business generates after operating expenses.'
+	},
+	netMargin: {
+		name: 'Net Margin',
+		description:
+			'Net income as a percentage of revenue. Shows how much of each dollar of sales ends up as bottom‑line profit.'
+	},
+	fcfMargin: {
+		name: 'Free Cash Flow Margin',
+		description:
+			'Free cash flow as a percentage of revenue. Measures how much cash the business actually retains after all operating expenses and capital spending.'
+	},
+	accrualsRatio: {
+		name: 'Accruals Ratio',
+		description:
+			'The gap between accounting earnings and operating cash flow scaled by assets. Higher (especially positive) values can signal lower earnings quality.'
+	},
+	debtToEquity: {
+		name: 'Debt to Equity',
+		description:
+			'Total debt relative to shareholders’ equity. Higher values indicate greater financial leverage and potentially higher risk.'
+	},
+	debtToAssets: {
+		name: 'Debt to Assets',
+		description:
+			'Total debt relative to total assets. Shows how much of the asset base is financed with borrowed money.'
+	},
+	interestCoverage: {
+		name: 'Interest Coverage',
+		description:
+			'EBIT divided by interest expense. Higher coverage means the company has more room to service its debt payments.'
+	},
+	currentRatio: {
+		name: 'Current Ratio',
+		description:
+			'Current assets divided by current liabilities. Indicates the ability to cover short‑term obligations with short‑term assets.'
+	},
+	quickRatio: {
+		name: 'Quick Ratio',
+		description:
+			'A stricter liquidity measure: (cash + short‑term investments + receivables) divided by current liabilities. Excludes inventory.'
+	},
+	revenueGrowthYoY: {
+		name: 'Revenue Growth YoY',
+		description:
+			'Year‑over‑year percentage change in total revenue. Higher growth indicates the top line is expanding faster.'
+	},
+	earningsGrowthYoY: {
+		name: 'Earnings Growth YoY',
+		description:
+			'Year‑over‑year percentage change in earnings. Captures how quickly profitability is improving or deteriorating.'
+	},
+	log: {
+		name: 'Size (Log Market Cap)',
+		description:
+			'Natural log of market capitalization, used as a smooth measure of company size. Larger values correspond to bigger companies.'
+	},
+	maTrend: {
+		name: 'Moving‑Average Trend',
+		description:
+			'Ratio of the 50‑day to the 200‑day moving average. Values above 1 typically indicate a positive price trend; below 1, a weaker trend.'
+	}
+};
 
 export type FundamentalsKeys = (typeof fundamentalsKeys)[number];
 

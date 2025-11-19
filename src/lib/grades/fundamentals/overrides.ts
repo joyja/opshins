@@ -96,10 +96,11 @@ export const fundamentalsSectorOverrides: FundamentalsSectorOverrides = {
 	financials: {
 		bookToMarket: {
 			direction: 'higherIsBetter',
-			a: 1.5,
-			b: 1.0,
-			c: 0.7,
-			d: 0.4
+			// Banks/insurers tend to run higher B/M than average
+			a: 1.2,
+			b: 0.8,
+			c: 0.5,
+			d: 0.25
 		},
 		debtToEquity: {
 			direction: 'lowerIsBetter',
@@ -158,10 +159,11 @@ export const fundamentalsSectorOverrides: FundamentalsSectorOverrides = {
 	technology: {
 		bookToMarket: {
 			direction: 'higherIsBetter',
-			a: 0.6,
-			b: 0.4,
-			c: 0.25,
-			d: 0.15
+			// Tech normally has low B/M; don't punish as harshly
+			a: 0.5,
+			b: 0.35,
+			c: 0.2,
+			d: 0.1
 		},
 		grossMargin: {
 			direction: 'higherIsBetter',
@@ -202,10 +204,10 @@ export const fundamentalsSectorOverrides: FundamentalsSectorOverrides = {
 		},
 		bookToMarket: {
 			direction: 'higherIsBetter',
-			a: 1.3,
-			b: 0.9,
-			c: 0.6,
-			d: 0.35
+			a: 1.0,
+			b: 0.7,
+			c: 0.45,
+			d: 0.25
 		}
 	},
 	communicationServices: {
@@ -218,19 +220,20 @@ export const fundamentalsSectorOverrides: FundamentalsSectorOverrides = {
 		},
 		bookToMarket: {
 			direction: 'higherIsBetter',
-			a: 1.0,
-			b: 0.7,
-			c: 0.4,
-			d: 0.2
+			a: 0.9,
+			b: 0.6,
+			c: 0.35,
+			d: 0.18
 		}
 	},
 	realEstate: {
 		bookToMarket: {
 			direction: 'higherIsBetter',
-			a: 1.8,
-			b: 1.2,
-			c: 0.8,
-			d: 0.5
+			// REITs/real estate have very asset-heavy balance sheets
+			a: 1.4,
+			b: 1.0,
+			c: 0.7,
+			d: 0.4
 		},
 		debtToEquity: {
 			direction: 'lowerIsBetter',

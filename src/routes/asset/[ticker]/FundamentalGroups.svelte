@@ -1,12 +1,22 @@
 <script lang="ts">
 	import type { FundamentalsGroupGrades } from '$lib/fundamentals';
+	import { isSuccess } from '@joyautomation/dark-matter';
 	import FundamentalGroup from './FundamentalGroup.svelte';
-	import Grid from './Grid.svelte';
-	let { fundamentalsGroups }: { fundamentalsGroups: FundamentalsGroupGrades } = $props();
+	import { fundamentalData } from './fundamentalData.svelte';
 </script>
 
-<Grid>
-	{#each Object.entries(fundamentalsGroups) as [key, value]}
-		<FundamentalGroup {key} {value} />
-	{/each}
-</Grid>
+{#if fundamentalData.fundamentals}
+	{#await fundamentalData.fundamentals then fundamentals}
+		{#if isSuccess(fundamentals.fundamentalsGroups)}
+			<div class="flex flex-column space-y-5">
+				{#each Object.entries(fundamentals.fundamentalsGroups.output).filter(([key]) => key !== 'aggregate') as [key, value]}
+					<div>
+						<FundamentalGroup {key} {value} />
+					</div>
+				{/each}
+			</div>
+		{:else}
+			{JSON.stringify(fundamentals.fundamentalsGroups.error)}
+		{/if}
+	{/await}
+{/if}

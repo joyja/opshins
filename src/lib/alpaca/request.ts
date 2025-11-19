@@ -315,9 +315,16 @@ export const getLastTradingDayRange = (): { start: Date; end: Date } => {
 
 	// Build NY session times (09:30 and 16:00) as UTC by subtracting the NY offset
 	const startUtc = new Date(Date.UTC(year, month, date, 9, 30, 0) - nyOffsetMs);
-	const endUtc = new Date(Date.UTC(year, month, date, 16, 0, 0) - nyOffsetMs);
+	const rawEndUtc = new Date(Date.UTC(year, month, date, 16, 0, 0) - nyOffsetMs);
 
-	return { start: startUtc, end: endUtc };
+	// If the computed end is in the future, clamp it to 15 minutes ago (but not before start)
+	const nowUtc = new Date();
+	const fifteenMinutesMs = 15 * 60 * 1000;
+	const nowMinus15 = new Date(nowUtc.getTime() - fifteenMinutesMs);
+	const adjustedEndUtc =
+		rawEndUtc > nowUtc ? new Date(Math.max(startUtc.getTime(), nowMinus15.getTime())) : rawEndUtc;
+
+	return { start: startUtc, end: adjustedEndUtc };
 };
 
 export const alpacaGetOptionChain = (symbol: string): Promise<Result<AlpacaOptionChain>> => {

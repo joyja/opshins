@@ -3,6 +3,7 @@ import {
 	alpacaGetAsset,
 	alpacaGetBarsHistory,
 	alpacaGetLatestTrade,
+	alpacaGetOptionChain,
 	getLastTradingDayRange
 } from '../../../lib/alpaca/request.ts';
 import {
@@ -63,6 +64,7 @@ export const load = ({ params }: { params: { ticker: string } }) => {
 		// balanceSheet: avGetBalanceSheet(params.ticker),
 		// incomeStatement: avGetIncomeStatement(params.ticker),
 		fundamentals,
+		optionsChain: alpacaGetOptionChain(params.ticker),
 		asset: alpacaGetAsset(params.ticker),
 		trade: alpacaGetLatestTrade(params.ticker),
 		start,

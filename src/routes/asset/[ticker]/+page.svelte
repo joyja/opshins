@@ -5,6 +5,7 @@
 	import { fundamentalData } from './fundamentalData.svelte.js';
 	import Card from './Card.svelte';
 	import type { Grade } from '$lib/fundamentals.js';
+	import OptionsChain from './OptionsChain.svelte';
 
 	let { data } = $props();
 
@@ -55,14 +56,6 @@
 	{/if}
 {/await}
 
-<!-- {#await data.fundamentals then fundamentals}
-	{#if isSuccess(fundamentals.fundamentals)}
-		<Fundamentals fundamentals={fundamentals.fundamentals.output} />
-	{:else}
-		{JSON.stringify(fundamentals.fundamentals.error)}
-	{/if}
-{/await} -->
-
 {#await data.trade then trade}
 	{#if isSuccess(trade)}
 		<p>{trade.output.trade.p}</p>
@@ -77,6 +70,14 @@
 		<LineChart title="Close price" width={900} height={320} data={tradeHistory.output} />
 	{:else}
 		{JSON.stringify(tradeHistory.error)}
+	{/if}
+{/await}
+
+{#await data.optionsChain then optionsChain}
+	{#if isSuccess(optionsChain)}
+		<OptionsChain data={optionsChain.output} />
+	{:else}
+		{JSON.stringify(optionsChain.error)}
 	{/if}
 {/await}
 

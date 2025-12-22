@@ -1,4 +1,8 @@
-import type { Fundamentals, FundamentalsGroupGrades } from '../../../lib/fundamentals.ts';
+import type {
+	Fundamentals,
+	FundamentalsGroupGrades,
+	fundamentalGroupWeights
+} from '../../../lib/fundamentals.ts';
 import type { Result } from '@joyautomation/dark-matter';
 
 export const fundamentalData = $state<{
@@ -6,6 +10,8 @@ export const fundamentalData = $state<{
 		fundamentals: Result<Fundamentals>;
 		fundamentalsGroups: Result<FundamentalsGroupGrades>;
 	}> | null;
+	fundamentalGroupWeights: typeof fundamentalGroupWeights | null;
 }>({
-	fundamentals: null
+	fundamentals: null,
+	fundamentalGroupWeights: null
 });

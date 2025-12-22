@@ -4,23 +4,31 @@ export type AlpacaOptionChain = {
 	next_page_token: string;
 	snapshots: {
 		[key: string]: {
+			greeks: {
+				delta: number;
+				gamma: number;
+				theta: number;
+				vega: number;
+				rho: number;
+			};
+			impliedVolatility: number;
 			dailyBar: AlpacaBar;
 			latestQuote: {
-				ap: number;
-				as: number;
-				ax: string;
-				bp: number;
-				bs: number;
-				bx: string;
-				c: string;
-				t: string;
+				ap: number; //ask price
+				as: number; //ask size
+				ax: string; //ask exchange
+				bp: number; //bid price
+				bs: number; //bid size
+				bx: string; //bid exchange
+				c: string; //condition
+				t: string; //timestamp
 			};
 			latestTrade: {
-				c: string;
-				p: number;
-				s: number;
-				t: string;
-				x: string;
+				c: string; //condition
+				p: number; //price
+				s: number; //size
+				t: string; //timestamp
+				x: string; //exchange
 			};
 			minuteBar: AlpacaBar;
 			prevDailyBar: AlpacaBar;

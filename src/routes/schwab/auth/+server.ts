@@ -1,5 +1,5 @@
 // src/routes/auth/schwab/+server.ts
-import type { RequestHandler } from './$types';
+import type { RequestHandler } from '../../../../.svelte-kit/types/src/routes/schwab/$types';
 import { env } from '$env/dynamic/private';
 const { SCHWAB_KEY, SCHWAB_REDIRECT_URI } = env;
 

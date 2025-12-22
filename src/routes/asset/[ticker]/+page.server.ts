@@ -16,7 +16,11 @@ import {
 	avGetBalanceSheet,
 	avGetIncomeStatement
 } from '../../../lib/alphaVantage/request.ts';
-import type { Fundamentals, FundamentalsGroupGrades } from '../../../lib/fundamentals.ts';
+import {
+	fundamentalGroupWeights,
+	type Fundamentals,
+	type FundamentalsGroupGrades
+} from '../../../lib/fundamentals.ts';
 
 export const load = ({ params }: { params: { ticker: string } }) => {
 	const { start, end } = getLastTradingDayRange();
@@ -67,6 +71,7 @@ export const load = ({ params }: { params: { ticker: string } }) => {
 		optionsChain: alpacaGetOptionChain(params.ticker),
 		asset: alpacaGetAsset(params.ticker),
 		trade: alpacaGetLatestTrade(params.ticker),
+		fundamentalGroupWeights,
 		start,
 		end,
 		tradeHistory: alpacaGetBarsHistory(params.ticker, start, end)

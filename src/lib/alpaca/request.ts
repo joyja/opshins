@@ -270,61 +270,83 @@ export const alpacaGetBarsHistory = (
  * Note: US market holidays are not handled.
  */
 export const getLastTradingDayRange = (): { start: Date; end: Date } => {
-	const now = new Date();
-	// Represent 'now' in the NY timezone
-	const nyNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    const now = new Date();
 
-	// Determine the NY calendar date we want (today if Mon–Fri, else previous Friday)
-	const nyTarget = new Date(nyNow.getTime());
-	const nyWeekday = nyTarget.getDay(); // 0=Sun..6=Sat in NY
-	if (nyWeekday === 6) {
-		// Saturday -> Friday
-		nyTarget.setDate(nyTarget.getDate() - 1);
-	} else if (nyWeekday === 0) {
-		// Sunday -> Friday
-		nyTarget.setDate(nyTarget.getDate() - 2);
-	}
+    // Helper: New York now (local clock in NY)
+    const nyNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
 
-	const year = nyTarget.getFullYear();
-	const month = nyTarget.getMonth(); // 0-based
-	const date = nyTarget.getDate();
+    // Helper: compute the NY offset (ms) for a specific NY calendar date
+    const getNyOffsetMs = (y: number, m0: number, d: number): number => {
+        const fmt = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            hour12: false,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        const atUtcMidnight = new Date(Date.UTC(y, m0, d, 0, 0, 0));
+        const parts = fmt.formatToParts(atUtcMidnight);
+        const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '0';
+        const nyY = parseInt(get('year'));
+        const nyM = parseInt(get('month'));
+        const nyD = parseInt(get('day'));
+        const nyH = parseInt(get('hour'));
+        const nyMin = parseInt(get('minute'));
+        const utcDateMs = Date.UTC(y, m0, d);
+        const nyDateMs = Date.UTC(nyY, nyM - 1, nyD);
+        const dayDelta = Math.round((nyDateMs - utcDateMs) / (24 * 60 * 60 * 1000));
+        const offsetMinutes = nyH * 60 + nyMin + dayDelta * 24 * 60; // negative for UTC-5/UTC-4
+        return offsetMinutes * 60 * 1000;
+    };
 
-	// Compute the NY offset (in ms) for this date using formatToParts
-	const fmt = new Intl.DateTimeFormat('en-US', {
-		timeZone: 'America/New_York',
-		hour12: false,
-		year: 'numeric',
-		month: '2-digit',
-		day: '2-digit',
-		hour: '2-digit',
-		minute: '2-digit'
-	});
-	const atUtcMidnight = new Date(Date.UTC(year, month, date, 0, 0, 0));
-	const parts = fmt.formatToParts(atUtcMidnight);
-	const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '0';
-	const nyY = parseInt(get('year'));
-	const nyM = parseInt(get('month'));
-	const nyD = parseInt(get('day'));
-	const nyH = parseInt(get('hour'));
-	const nyMin = parseInt(get('minute'));
-	const utcDateMs = Date.UTC(year, month, date);
-	const nyDateMs = Date.UTC(nyY, nyM - 1, nyD);
-	const dayDelta = Math.round((nyDateMs - utcDateMs) / (24 * 60 * 60 * 1000));
-	const offsetMinutes = nyH * 60 + nyMin + dayDelta * 24 * 60; // negative for UTC-5/UTC-4
-	const nyOffsetMs = offsetMinutes * 60 * 1000;
+    // Helper: convert an NY local Y-M-D H:M to a UTC Date
+    const nyLocalToUtc = (y: number, m0: number, d: number, hh: number, mm: number): Date => {
+        const offsetMs = getNyOffsetMs(y, m0, d);
+        return new Date(Date.UTC(y, m0, d, hh, mm, 0) - offsetMs);
+    };
 
-	// Build NY session times (09:30 and 16:00) as UTC by subtracting the NY offset
-	const startUtc = new Date(Date.UTC(year, month, date, 9, 30, 0) - nyOffsetMs);
-	const rawEndUtc = new Date(Date.UTC(year, month, date, 16, 0, 0) - nyOffsetMs);
+    // Helper: determine previous trading day (ignoring market holidays)
+    const previousTradingDay = (y: number, m0: number, d: number): { y: number; m0: number; d: number } => {
+        const candidate = new Date(Date.UTC(y, m0, d, 12, 0, 0)); // noon UTC to avoid DST edge
+        // Step back one day until Mon–Fri
+        do {
+            candidate.setUTCDate(candidate.getUTCDate() - 1);
+        } while ([0, 6].includes(candidate.getUTCDay()));
+        return { y: candidate.getUTCFullYear(), m0: candidate.getUTCMonth(), d: candidate.getUTCDate() };
+    };
 
-	// If the computed end is in the future, clamp it to 15 minutes ago (but not before start)
-	const nowUtc = new Date();
-	const fifteenMinutesMs = 15 * 60 * 1000;
-	const nowMinus15 = new Date(nowUtc.getTime() - fifteenMinutesMs);
-	const adjustedEndUtc =
-		rawEndUtc > nowUtc ? new Date(Math.max(startUtc.getTime(), nowMinus15.getTime())) : rawEndUtc;
+    // NY clock components
+    const nyWeekday = nyNow.getDay(); // 0=Sun..6=Sat in NY
+    const nyY = nyNow.getFullYear();
+    const nyM0 = nyNow.getMonth();
+    const nyD = nyNow.getDate();
+    const nyMinutes = nyNow.getHours() * 60 + nyNow.getMinutes();
 
-	return { start: startUtc, end: adjustedEndUtc };
+    const OPEN_MIN = 9 * 60 + 30; // 09:30
+    const CLOSE_MIN = 16 * 60; // 16:00
+
+    const isWeekday = nyWeekday >= 1 && nyWeekday <= 5; // Mon–Fri
+    const isInSession = isWeekday && nyMinutes >= OPEN_MIN && nyMinutes < CLOSE_MIN;
+
+    if (isInSession) {
+        const start = nyLocalToUtc(nyY, nyM0, nyD, 9, 30);
+        const fifteenMinutesMs = 15 * 60 * 1000;
+        const endCandidate = new Date(now.getTime() - fifteenMinutesMs);
+        const end = endCandidate < start ? start : endCandidate;
+        return { start, end };
+    }
+
+    // Outside session -> last trading day range
+    let ly = nyY, lm0 = nyM0, ld = nyD;
+    // If after close, last trading day is today; before open or weekend -> step back appropriately
+    if (!isWeekday || nyMinutes < OPEN_MIN) {
+        ({ y: ly, m0: lm0, d: ld } = previousTradingDay(nyY, nyM0, nyD));
+    }
+    const start = nyLocalToUtc(ly, lm0, ld, 9, 30);
+    const end = nyLocalToUtc(ly, lm0, ld, 16, 0);
+    return { start, end };
 };
 
 export const alpacaGetOptionChain = (symbol: string): Promise<Result<AlpacaOptionChain>> => {

@@ -10,6 +10,7 @@
 	let { data } = $props();
 
 	fundamentalData.fundamentals = data.fundamentals;
+	fundamentalData.fundamentalGroupWeights = data.fundamentalGroupWeights;
 	const getGradeColor = (grade: Grade) => {
 		switch (grade) {
 			case 'a':
@@ -75,7 +76,7 @@
 
 {#await data.optionsChain then optionsChain}
 	{#if isSuccess(optionsChain)}
-		<OptionsChain data={optionsChain.output} />
+		<OptionsChain chain={optionsChain.output} />
 	{:else}
 		{JSON.stringify(optionsChain.error)}
 	{/if}

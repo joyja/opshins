@@ -100,15 +100,23 @@
 	);
 </script>
 
-<p>
-	{#if position.qty > 0}
+{#if position.qty > 0}
+	<p
+		style:color={position.marketValue -
+			((assignments[0].boughtAt || 0) * 100 - calcTotalPremiumEarnings(legs)) >
+		0
+			? 'green'
+			: 'red'}
+	>
 		Total Gain/Loss: {formatDollarValue(
 			position.marketValue - ((assignments[0].boughtAt || 0) * 100 - calcTotalPremiumEarnings(legs))
 		)}
-	{:else}
+	</p>
+{:else}
+	<p style:color={calcTotalPremiumEarnings(legs) + realizedGains > 0 ? 'green' : 'red'}>
 		Total Gain/Loss: {formatDollarValue(calcTotalPremiumEarnings(legs) + realizedGains)}
-	{/if}
-</p>
+	</p>
+{/if}
 <h4>Premium Earnings</h4>
 <ul>
 	{#each Object.values(legs) as leg}

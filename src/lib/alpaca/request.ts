@@ -514,3 +514,28 @@ export const alpacaGetOptionChain = (
     "v1beta1",
   );
 };
+
+export type AlpacaOptionQuote = {
+  ap: number; // ask price
+  as: number; // ask size
+  ax: string; // ask exchange
+  bp: number; // bid price
+  bs: number; // bid size
+  bx: string; // bid exchange
+  c: string; // condition
+  t: string; // timestamp
+};
+
+export type AlpacaOptionQuoteResponse = {
+  quotes: Record<string, AlpacaOptionQuote>;
+};
+
+export const alpacaGetOptionQuote = (
+  symbols: string[],
+): Promise<Result<AlpacaOptionQuoteResponse>> => {
+  return alpacaSendRequest(
+    `options/quotes/latest?symbols=${symbols.join(",")}&feed=indicative`,
+    "data",
+    "v1beta1",
+  );
+};

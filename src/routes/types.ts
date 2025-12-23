@@ -1,7 +1,10 @@
+import type { AlpacaOptionQuote } from "../lib/alpaca/request.ts";
+
 export type OptionPosition = {
   symbol: string;
   qty: string;
   marketValue: number;
+  optionQuote?: AlpacaOptionQuote;
 };
 
 export type Position = {

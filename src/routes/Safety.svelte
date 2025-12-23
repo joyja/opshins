@@ -4,20 +4,36 @@
 
 	const { position }: { position: Position } = $props();
 
-	const totalBought = $derived(
+	const totalSharesBought = $derived(
+		position.history.filter((a) => a.side === 'buy').reduce((acc, a) => acc + a.qty, 0)
+	);
+
+	const costBasisOfSharesBought = $derived(
 		position.history.filter((a) => a.side === 'buy').reduce((acc, a) => acc + a.price * a.qty, 0)
 	);
 
-	const totalSold = $derived(
+	const avgCostPerShare = $derived(
+		totalSharesBought > 0 ? costBasisOfSharesBought / totalSharesBought : 0
+	);
+
+	const totalSharesSold = $derived(
+		position.history.filter((a) => a.side === 'sell').reduce((acc, a) => acc + a.qty, 0)
+	);
+
+	const costBasisOfSharesSold = $derived(avgCostPerShare * totalSharesSold);
+
+	const proceedsFromSales = $derived(
 		position.history.filter((a) => a.side === 'sell').reduce((acc, a) => acc + a.price * a.qty, 0)
 	);
 
-	const netCashFlow = $derived(totalSold - totalBought);
-	const totalGainLoss = $derived(netCashFlow + position.marketValue);
+	const realizedGains = $derived(proceedsFromSales - costBasisOfSharesSold);
+	const unrealizedGains = $derived(position.marketValue - position.costBasis);
+	const totalEarnings = $derived(realizedGains + unrealizedGains);
 </script>
 
-<p>Total Gain/Loss: {formatDollarValue(totalGainLoss)}</p>
-<p>Total Bought: {formatDollarValue(totalBought)}</p>
-<p>Total Sold: {formatDollarValue(totalSold)}</p>
-<p>Net Cash Flow: {formatDollarValue(netCashFlow)}</p>
+<p style:color={totalEarnings > 0 ? 'green' : 'red'}>
+	Total Earnings: {formatDollarValue(totalEarnings)}
+</p>
+<p>Realized Gains: {formatDollarValue(realizedGains)}</p>
+<p>Unrealized Gains: {formatDollarValue(unrealizedGains)}</p>
 <p>Current Market Value: {formatDollarValue(position.marketValue)}</p>

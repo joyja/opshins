@@ -1,13 +1,23 @@
 <script lang="ts">
-	import type { AlpacaActivities, AlpacaPosition, AlpacaPositions } from '$lib/alpaca/request';
+	import type {
+		AlpacaActivities,
+		AlpacaOptionQuote,
+		AlpacaPosition,
+		AlpacaPositions
+	} from '$lib/alpaca/request';
 	import Long from './Long.svelte';
 	import Pmcc from './Pmcc.svelte';
 	import Safety from './Safety.svelte';
 	import type { Activity, OptionPosition, Position } from './types';
 	import Wheel from './Wheel.svelte';
 
-	const { positions, activities }: { positions: AlpacaPositions; activities: AlpacaActivities } =
-		$props();
+	const {
+		positions,
+		activities
+	}: {
+		positions: (AlpacaPosition & { optionQuote?: AlpacaOptionQuote })[];
+		activities: AlpacaActivities;
+	} = $props();
 
 	const userContext = {
 		CSCO: {
@@ -101,7 +111,8 @@
 						acc[underlyingSymbol].currentOptions[symbol] = {
 							symbol,
 							qty: position.qty,
-							marketValue: parseFloat(position.market_value)
+							marketValue: parseFloat(position.market_value),
+							optionQuote: position.optionQuote
 						};
 					}
 				}

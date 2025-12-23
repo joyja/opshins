@@ -4,7 +4,9 @@
 	const { position }: { position: Position } = $props();
 </script>
 
-<p>Total Gain/Loss: {formatDollarValue(position.marketValue - position.costBasis)}</p>
+<p style:color={position.marketValue - position.costBasis > 0 ? 'green' : 'red'}>
+	Total Gain/Loss: {formatDollarValue(position.marketValue - position.costBasis)}
+</p>
 <p>Cost Basis: {formatDollarValue(position.costBasis)}</p>
 <p>Market Value: {formatDollarValue(position.marketValue)}</p>
 <ul>

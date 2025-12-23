@@ -23,6 +23,8 @@
 
 	const leap = $derived(position.currentOptions[leapHistory?.symbol || '']);
 
+	const leapQuote = $derived(leap.optionQuote);
+
 	type WheelLeg = {
 		symbol: string;
 		type: 'put' | 'call';
@@ -108,18 +110,37 @@
 				[] as { boughtAt: number | null; soldAt: number | null }[]
 			)
 	);
+	const getMid = (quote: typeof leapQuote): number => {
+		if (!quote || !quote.bp || !quote.ap) {
+			return 0;
+		}
+		return quote.bp + (quote.ap - quote.bp) / 2;
+	};
 </script>
 
-<p>
+<p
+	style:color={getMid(leapQuote) * 100 -
+		(leapHistory?.price || 0) * 100 +
+		calcTotalPremiumEarnings(legs) >
+	0
+		? 'green'
+		: 'red'}
+>
 	Total Gain/Loss: {formatDollarValue(
-		leap.marketValue - (leapHistory?.price || 0) * 100 + calcTotalPremiumEarnings(legs)
+		getMid(leapQuote) * 100 - (leapHistory?.price || 0) * 100 + calcTotalPremiumEarnings(legs)
 	)}
 </p>
 <h4>Leap</h4>
 <p>
+	Bid: {formatDollarValue(leapQuote?.bp || 0)}
+	Ask: {formatDollarValue(leapQuote?.ap || 0)}
+	Mid: {formatDollarValue(getMid(leapQuote))}
+</p>
+<p>
 	{leapHistory?.symbol} Purchased @ {formatDollarValue(leapHistory?.price || 0)}
 </p>
 <p>MarketValue: {formatDollarValue(leap.marketValue)}</p>
+<p>MidValue: {formatDollarValue(getMid(leapQuote) * 100)}</p>
 
 <h4>Premium Earnings</h4>
 <ul>

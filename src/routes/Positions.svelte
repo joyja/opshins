@@ -54,7 +54,11 @@
 	const equityHistories = $derived(
 		activities.reduce(
 			(acc, activity) => {
-				if (activity.activity_type !== 'FILL' && activity.activity_type !== 'OPASN') {
+				if (
+					activity.activity_type !== 'FILL' &&
+					activity.activity_type !== 'OPASN' &&
+					activity.activity_type !== 'DIV'
+				) {
 					return acc;
 				}
 				const symbol = getUnderlyingSymbol(activity.symbol);
@@ -71,9 +75,16 @@
 					price:
 						activity.activity_type === 'FILL'
 							? parseFloat(activity.price)
-							: getStrikeFromOptionSymbol(activity.symbol),
+							: activity.activity_type === 'OPASN'
+								? getStrikeFromOptionSymbol(activity.symbol)
+								: parseFloat(activity.net_amount), //to get dividend payment
 					qty: parseFloat(activity.qty),
-					side: activity.activity_type === 'FILL' ? activity.side : 'assigned'
+					side:
+						activity.activity_type === 'FILL'
+							? activity.side
+							: activity.activity_type === 'OPASN'
+								? 'assigned'
+								: 'dividend'
 				});
 				return acc;
 			},
@@ -124,8 +135,18 @@
 	const formatDollarValue = (value: number): string => {
 		return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 	};
+	const totalFeesPaid = $derived(
+		-1 *
+			activities.reduce((acc, activity) => {
+				if (activity.activity_type === 'FEE') {
+					return acc + parseFloat(activity.net_amount);
+				}
+				return acc;
+			}, 0)
+	);
 </script>
 
+<p>Total Fees Paid: {formatDollarValue(totalFeesPaid)}</p>
 <section>
 	{#each Object.entries(equities) as [symbol, position]}
 		<article>

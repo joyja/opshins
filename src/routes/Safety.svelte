@@ -26,7 +26,11 @@
 		position.history.filter((a) => a.side === 'sell').reduce((acc, a) => acc + a.price * a.qty, 0)
 	);
 
-	const realizedGains = $derived(proceedsFromSales - costBasisOfSharesSold);
+	const proceedsFromDividends = $derived(
+		position.history.filter((a) => a.side === 'dividend').reduce((acc, a) => acc + a.price, 0)
+	);
+
+	const realizedGains = $derived(proceedsFromSales - costBasisOfSharesSold + proceedsFromDividends);
 	const unrealizedGains = $derived(position.marketValue - position.costBasis);
 	const totalEarnings = $derived(realizedGains + unrealizedGains);
 </script>

@@ -1,26 +1,26 @@
-import type { AlpacaOptionQuote } from "../lib/alpaca/request.ts";
+import type { AlpacaOptionQuote } from '../lib/alpaca/request.ts';
 
 export type OptionPosition = {
-  symbol: string;
-  qty: string;
-  marketValue: number;
-  optionQuote?: AlpacaOptionQuote;
+	symbol: string;
+	qty: string;
+	marketValue: number;
+	optionQuote?: AlpacaOptionQuote;
 };
 
 export type Position = {
-  symbol: string;
-  strategy: string;
-  qty: number;
-  marketValue: number;
-  costBasis: number;
-  currentOptions: Record<string, OptionPosition>;
-  history: Activity[];
+	symbol: string;
+	strategy: string;
+	qty: number;
+	marketValue: number;
+	costBasis: number;
+	currentOptions: Record<string, OptionPosition>;
+	history: Activity[];
 };
 
 export type Activity = {
-  symbol: string;
-  date: Date;
-  price: number;
-  side: string;
-  qty: number;
+	symbol: string;
+	date: Date;
+	price: number;
+	side: string;
+	qty: number;
 };

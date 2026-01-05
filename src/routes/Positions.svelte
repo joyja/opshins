@@ -15,13 +15,25 @@
 		positions,
 		activities
 	}: {
-		positions: (AlpacaPosition & { optionQuote?: AlpacaOptionQuote })[];
+		positions: (AlpacaPosition & {
+			optionQuote?: AlpacaOptionQuote;
+			underlyingAssetPrice?: number;
+		})[];
 		activities: AlpacaActivities;
 	} = $props();
 
 	const userContext = {
 		CSCO: {
 			strategy: 'PMCC'
+		},
+		BAC: {
+			strategy: 'Wheel'
+		},
+		AMZN: {
+			strategy: 'Long'
+		},
+		MSFT: {
+			strategy: 'Long'
 		},
 		NVDA: {
 			strategy: 'Long'
@@ -98,6 +110,7 @@
 					const { symbol } = position;
 					acc[symbol] = {
 						symbol: symbol,
+						price: parseFloat(position.current_price),
 						strategy: userContext[symbol as UserContextKey]?.strategy || 'unknown',
 						qty: parseInt(position.qty),
 						costBasis: parseFloat(position.cost_basis),
@@ -108,9 +121,14 @@
 				} else if (position.asset_class.includes('option')) {
 					const { symbol } = position;
 					const underlyingSymbol = getUnderlyingSymbol(symbol);
+					const strategy = userContext[underlyingSymbol as UserContextKey]?.strategy || 'unknown';
 					if (!acc[underlyingSymbol]) {
 						acc[underlyingSymbol] = {
 							symbol: underlyingSymbol,
+							price:
+								strategy === 'PMCC' || strategy === 'Wheel'
+									? position.underlyingAssetPrice || NaN
+									: parseFloat(position.current_price),
 							qty: 0,
 							costBasis: 0,
 							marketValue: 0,
@@ -151,6 +169,7 @@
 	{#each Object.entries(equities) as [symbol, position]}
 		<article>
 			<h2>{symbol}</h2>
+			<p>Price: {formatDollarValue(position.price)}</p>
 			<p>Shares: {position.qty}</p>
 			{#if position.strategy === 'Wheel'}
 				<h3>Wheel</h3>

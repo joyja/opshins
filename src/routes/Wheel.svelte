@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Activity, Position } from './types';
+	import type { Activity, OptionPosition, Position } from './types';
 	import { formatDollarValue } from './utils';
 
 	const { position }: { position: Position } = $props();
@@ -98,6 +98,60 @@
 			return acc + (assignment.soldAt - assignment.boughtAt) * 100;
 		}, 0)
 	);
+
+	const getStrikeFromOptionSymbol = (symbol: string): number => {
+		const match = symbol.match(/(\d{8})$/);
+		return match ? parseInt(match[1]) / 1000 : 0;
+	};
+
+	const getExpirationDateFromOptionSymbol = (symbol: string): Date => {
+		// OCC option symbol format example: INTC260109C00040000
+		// Underlying: INTC, Expiration: 260109 (YYMMDD), Type: C/P, Strike: 00040000
+		const match = symbol.match(/^[A-Za-z]+(\d{6})[CP]/);
+		if (!match) {
+			return new Date();
+		}
+		const yymmdd = match[1];
+		const yy = parseInt(yymmdd.slice(0, 2), 10);
+		const mm = parseInt(yymmdd.slice(2, 4), 10);
+		const dd = parseInt(yymmdd.slice(4, 6), 10);
+		const fullYear = 2000 + yy; // Alpaca/modern options: assume 20YY
+		return new Date(fullYear, mm - 1, dd);
+	};
+
+	const isCall = (option: OptionPosition): boolean => {
+		return option.symbol.slice(10, 11) === 'C';
+	};
+
+	const calculateOptionIntrinsicValue = (option: OptionPosition): number => {
+		return (
+			100 *
+			Math.max(
+				0,
+				isCall(option)
+					? position.price - getStrikeFromOptionSymbol(option.symbol)
+					: getStrikeFromOptionSymbol(option.symbol) - position.price
+			)
+		);
+	};
+
+	const calculateOptionExtrinsicValue = (option: OptionPosition): number => {
+		return -1 * option.marketValue - calculateOptionIntrinsicValue(option) || 0;
+	};
+
+	const calculateDaysToExpiration = (option: OptionPosition): number => {
+		const msDiff =
+			getExpirationDateFromOptionSymbol(option.symbol).getTime() - new Date().getTime();
+		return Math.ceil(msDiff / (1000 * 60 * 60 * 24));
+	};
+
+	const calculateExtrinsicPerDay = (option: OptionPosition): number => {
+		return calculateOptionExtrinsicValue(option) / calculateDaysToExpiration(option);
+	};
+
+	const valueOverCurrentOptionStrike = (option: OptionPosition): number => {
+		return position.price - getStrikeFromOptionSymbol(option.symbol);
+	};
 </script>
 
 {#if position.qty > 0}
@@ -109,8 +163,39 @@
 			: 'red'}
 	>
 		Total Gain/Loss: {formatDollarValue(
-			position.marketValue - ((assignments[0].boughtAt || 0) * 100 - calcTotalPremiumEarnings(legs))
+			position.marketValue -
+				((assignments[0].boughtAt || 0) * 100 -
+					calcTotalPremiumEarnings(legs) +
+					calculateOptionIntrinsicValue(
+						position.currentOptions[Object.keys(position.currentOptions)[0]]
+					))
 		)}
+	</p>
+	<p>
+		Current Option Market Value: {formatDollarValue(
+			(position.currentOptions[Object.keys(position.currentOptions)[0]]?.marketValue || 0) * -1
+		)}
+	</p>
+	<p>
+		Current Intrinsic Value: {formatDollarValue(
+			calculateOptionIntrinsicValue(
+				position.currentOptions[Object.keys(position.currentOptions)[0]]
+			)
+		)}
+	</p>
+	<p>
+		Current Extrinsic Value: {formatDollarValue(
+			calculateOptionExtrinsicValue(
+				position.currentOptions[Object.keys(position.currentOptions)[0]]
+			)
+		)}
+	</p>
+	<p>
+		Extrinsic Per Day: {formatDollarValue(
+			calculateExtrinsicPerDay(position.currentOptions[Object.keys(position.currentOptions)[0]])
+		)} ({calculateDaysToExpiration(
+			position.currentOptions[Object.keys(position.currentOptions)[0]]
+		)} days)
 	</p>
 {:else}
 	<p style:color={calcTotalPremiumEarnings(legs) + realizedGains > 0 ? 'green' : 'red'}>

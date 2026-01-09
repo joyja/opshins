@@ -66,12 +66,15 @@ export const load = () => {
         ) {
           return createSuccess(
             value.output.map((position) => {
+              const isOption = position.asset_class.includes("option");
               return {
                 ...position,
-                optionQuote: optionQuotes.output.quotes[position.symbol],
-                underlyingAssetPrice:
-                  underlyingAssets[getUnderlyingSymbol(position.symbol)]
-                    ?.output.trade.p,
+                ...(isOption && {
+                  optionQuote: optionQuotes.output.quotes[position.symbol],
+                  underlyingAssetPrice:
+                    underlyingAssets[getUnderlyingSymbol(position.symbol)]
+                      ?.output.trade.p,
+                }),
               };
             }),
           );

@@ -343,8 +343,38 @@ export const alpacaGetPositions = (): Promise<Result<AlpacaPositions>> => {
   return alpacaSendRequest("positions");
 };
 
-export const alpacaGetActivities = (): Promise<Result<AlpacaActivities>> => {
-  return alpacaSendRequest("account/activities?direction=desc&page_size=100");
+export const alpacaGetActivities = async (): Promise<Result<AlpacaActivities>> => {
+  const allActivities: AlpacaActivities = [];
+  let pageToken: string | null = null;
+
+  do {
+    const url: string = pageToken
+      ? `account/activities?direction=desc&page_size=100&page_token=${pageToken}`
+      : "account/activities?direction=desc&page_size=100";
+
+    const result: Result<AlpacaActivities> = await alpacaSendRequest<AlpacaActivities>(url);
+
+    if (result.success) {
+      const activities = result.output;
+
+      if (activities.length === 0) {
+        break;
+      }
+
+      allActivities.push(...activities);
+
+      // Use the ID of the last activity for pagination
+      if (activities.length === 100) {
+        pageToken = activities[activities.length - 1].id;
+      } else {
+        pageToken = null;
+      }
+    } else {
+      return result;
+    }
+  } while (pageToken);
+
+  return createSuccess(allActivities);
 };
 
 export const alpacaGetAsset = (
